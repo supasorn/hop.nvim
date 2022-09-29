@@ -178,7 +178,7 @@ end
 --
 -- In addition the jump targets, this function returns the total number of jump targets (i.e. this is the same thing as
 -- traversing the lined jump targets and summing the number of jump targets for all lines) as a courtesy, plus «
--- indirect jump targets. » Indirect jump targets are encoded as a flat list-table containing three values: i, for the
+-- indirect jump targets. » Indirect jump targets are encoded as a flat list-table contanoremap gD :lua vim.lsp.buf.definition()<CR>ining three values: i, for the
 -- ith line, j, for the rank of the jump target, and dist, the score distance of the associated jump target. This list
 -- is sorted according to that last dist parameter in order to know how to distribute the jump targets over the buffer.
 function M.jump_targets_by_scanning_lines(regex)

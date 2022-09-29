@@ -294,6 +294,22 @@ function M.hint_with(jump_target_gtr, opts)
   end)
 end
 
+function M.hint_with_phrase(jump_target_gtr, opts)
+  if opts == nil then
+    opts = override_opts(opts)
+  end
+
+  M.hint_with_callback(jump_target_gtr, opts, function(jt)
+    M.hint_with_callback(jump_target_gtr, opts, function(jt2)
+      M.move_cursor_to(jt.window, jt.line + 1, jt.column - 1, opts.hint_offset, opts.direction)
+      vim.api.nvim_feedkeys("v", "x", true)
+      M.move_cursor_to(jt2.window, jt2.line + 1, jt2.column - 1, opts.hint_offset, opts.direction)
+
+  end)
+
+  end)
+end
+
 function M.hint_with_callback(jump_target_gtr, opts, callback)
   if opts == nil then
     opts = override_opts(opts)
@@ -499,6 +515,28 @@ function M.hint_char2(opts)
 
   M.hint_with(
     generator(jump_target.regex_by_case_searching(c, true, opts)),
+    opts
+  )
+end
+
+function M.hint_phrase(opts)
+  opts = override_opts(opts)
+
+  local c = get_input_pattern('Hop phrase 2 char: ', 2)
+  if not c then
+    return
+  end
+  c = c:sub(1, 1) .. '\\|' .. c:sub(2, 2)
+
+  local generator
+  if opts.current_line_only then
+    generator = jump_target.jump_targets_for_current_line
+  else
+    generator = jump_target.jump_targets_by_scanning_lines
+  end
+
+  M.hint_with_phrase(
+    generator(jump_target.regex_by_case_searching(c, false, opts)),
     opts
   )
 end
