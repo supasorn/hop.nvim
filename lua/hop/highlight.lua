@@ -4,13 +4,13 @@ local M = {}
 -- Insert the highlights that Hop uses.
 function M.insert_highlights()
   -- Highlight used for the mono-sequence keys (i.e. sequence of 1).
-  vim.api.nvim_command('highlight default HopNextKey  guifg=#ff0000 gui=bold ctermfg=198 cterm=bold')
+  vim.api.nvim_command('highlight default HopNextKey  guifg=#ff0000 gui=bold cterm=bold')
 
   -- Highlight used for the first key in a sequence.
-  vim.api.nvim_command('highlight default HopNextKey1 guifg=#ffb400 gui=bold ctermfg=45 cterm=bold')
+  vim.api.nvim_command('highlight default HopNextKey1 guifg=#ffb400 gui=bold cterm=bold')
 
   -- Highlight used for the second and remaining keys in a sequence.
-  vim.api.nvim_command('highlight default HopNextKey2 guifg=#b98300 ctermfg=33')
+  vim.api.nvim_command('highlight default HopNextKey2 guifg=#b98300')
 
   -- Highlight used for the unmatched part of the buffer.
   -- ctermbg=bg is omitted because it errors if Normal does not have ctermbg set
