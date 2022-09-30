@@ -261,14 +261,14 @@ end
 -- Add option to shift cursor by column offset
 --
 -- This function will update the jump list.
-function M.move_cursor_to(w, line, column, hint_offset, direction)
+function M.move_cursor_to(w, line, column, hint_offset, direction, noshift)
   -- If we do not ask for an offset jump, we don’t have to retrieve any additional lines because we will jump to the
   -- actual jump target. If we do want a jump with an offset, we need to retrieve the line the jump target lies in so
   -- that we can compute the offset correctly. This is linked to the fact that currently, Neovim doesn’s have an API to
   -- « offset something by N visual columns. »
 
   -- If it is pending for operator shift column to the right by 1
-  if vim.api.nvim_get_mode().mode == 'no' and direction ~= 1 then
+  if vim.api.nvim_get_mode().mode == 'no' and direction ~= 1 and noshift == nill then
     column = column + 1
   end
 
@@ -294,16 +294,18 @@ function M.hint_with(jump_target_gtr, opts)
   end)
 end
 
-function M.hint_with_phrase(jump_target_gtr, opts)
+function M.hint_with_2pos(jump_target_gtr, opts)
   if opts == nil then
     opts = override_opts(opts)
   end
 
   M.hint_with_callback(jump_target_gtr, opts, function(jt)
     M.hint_with_callback(jump_target_gtr, opts, function(jt2)
-      M.move_cursor_to(jt.window, jt.line + 1, jt.column - 1, opts.hint_offset, opts.direction)
-      vim.api.nvim_feedkeys("v", "x", true)
-      M.move_cursor_to(jt2.window, jt2.line + 1, jt2.column - 1, opts.hint_offset, opts.direction)
+      M.move_cursor_to(jt.window, jt.line + 1, jt.column - 1, opts.hint_offset, opts.direction, true)
+      vim.api.nvim_feedkeys(opts.posmode, "x", true)
+      if jt2["repeat"] == nil then
+        M.move_cursor_to(jt2.window, jt2.line + 1, jt2.column - 1, opts.hint_offset, opts.direction, true)
+      end
 
   end)
 
@@ -379,7 +381,9 @@ function M.hint_with_callback(jump_target_gtr, opts, callback)
       M.quit(hs)
       -- If the key captured via getchar() is not the quit_key, pass it through
       -- to nvim to be handled normally (including mappings)
-      if key ~= vim.api.nvim_replace_termcodes(opts.quit_key, true, false, true) then
+      if key == '.' then
+        callback({["repeat"] = true})
+      elseif key ~= vim.api.nvim_replace_termcodes(opts.quit_key, true, false, true) then
         vim.api.nvim_feedkeys(key, '', true)
       end
       break
@@ -519,6 +523,23 @@ function M.hint_char2(opts)
   )
 end
 
+function M.hint_2lines(opts)
+  opts = override_opts(opts)
+
+  local generator
+  if opts.current_line_only then
+    generator = jump_target.jump_targets_for_current_line
+  else
+    generator = jump_target.jump_targets_by_scanning_lines
+  end
+
+  opts.posmode = 'V'
+  M.hint_with_2pos(
+    generator(jump_target.regex_by_line_start()),
+    opts
+  )
+end
+
 function M.hint_phrase(opts)
   opts = override_opts(opts)
 
@@ -535,7 +556,8 @@ function M.hint_phrase(opts)
     generator = jump_target.jump_targets_by_scanning_lines
   end
 
-  M.hint_with_phrase(
+  opts.posmode = 'v'
+  M.hint_with_2pos(
     generator(jump_target.regex_by_case_searching(c, false, opts)),
     opts
   )
