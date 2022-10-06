@@ -305,6 +305,8 @@ function M.hint_with_2pos(jump_target_gtr, opts)
       vim.api.nvim_feedkeys(opts.posmode, "x", true)
       if jt2["repeat"] == nil then
         M.move_cursor_to(jt2.window, jt2.line + 1, jt2.column - 1, opts.hint_offset, opts.direction, true)
+      else
+        M.move_cursor_to(jt.window, jt.line + 1, jt.column - 1, opts.hint_offset, opts.direction, true)
       end
 
   end)
@@ -533,7 +535,7 @@ function M.hint_2lines(opts)
     generator = jump_target.jump_targets_by_scanning_lines
   end
 
-  opts.posmode = 'V'
+  opts.posmode = 'Vo'
   M.hint_with_2pos(
     generator(jump_target.regex_by_line_start()),
     opts
